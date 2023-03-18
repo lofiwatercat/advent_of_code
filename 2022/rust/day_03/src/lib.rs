@@ -7,9 +7,20 @@ pub fn process_part1(input: &str) -> u32 {
 }
 
 pub fn process_part2(input: &str) -> u32 {
-    let input_to_parse = input.lines();
+    let mut i = 0;
+    let mut triplets = String::from("");
+    let mut sum = 0;
+    for line in input.lines() {
+        triplets = format!("{}{}{}", triplets, line, "\n");
+        i += 1;
+        if i == 3 {
+            sum += evaluate_triplets(&triplets);
+            i = 0;
+            triplets = String::from("");
+        }
+    }
 
-    0
+    sum
 }
 
 fn evaluate_contents(line: &str) -> u32 {
@@ -48,8 +59,41 @@ fn evaluate_contents(line: &str) -> u32 {
     prio.get(&prio_char).copied().unwrap()
 }
 
-fn evaluate_triplets(input: &str) -> u32 {
-    0
+fn evaluate_triplets(input: &String) -> u32 {
+    let mut prio: HashMap<String, u32> = HashMap::new();
+    let mut char_counter: HashMap<String, u32> = HashMap::new();
+    let mut prio_value = String::new();
+    let alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    for (i, char) in (0u32..).zip(alphabet.chars()) {
+        prio.insert(char.to_string(), i + 1);
+    }
+
+    let mut i = 0;
+    for line in input.lines() {
+        for char in line.chars() {
+            char_counter
+                .entry(char.to_string())
+                .and_modify(|count| {
+                    if *count == i {
+                        *count += 1;
+                    }
+                })
+                .or_insert(if i == 0 { 1 } else { 0 });
+        }
+        i += 1;
+    }
+
+    for (key, value) in char_counter.iter() {
+        if *value == 3 {
+            prio_value = key.clone();
+        }
+    }
+
+    println!("char counter: {:?}", char_counter);
+    println!("Triplets: \n{}", input);
+    println!("PrioValue: {}", prio_value);
+
+    prio.get(&prio_value).copied().unwrap()
 }
 
 #[cfg(test)]
@@ -74,8 +118,42 @@ CrZsJsPPZsGzwwsLwLmpwMDw";
         let input = "vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg";
-        let result = evaluate_triplets(input);
+        let result = evaluate_triplets(&String::from(input));
         assert_eq!(result, 18);
+    }
+
+    #[test]
+    fn test_evaluate_triplets2() {
+        let input = "wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw";
+        let result = evaluate_triplets(&String::from(input));
+        assert_eq!(result, 52);
+    }
+
+    #[test]
+    fn part_2() {
+        let input = "vJrwpWtwJgWrhcsFMMfFFhFp
+jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
+PmmdzqPrVvPwwTWBwg
+wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
+ttgJtRGJQctTZtZT
+CrZsJsPPZsGzwwsLwLmpwMDw
+";
+        let mut sum = 0;
+        let mut i = 0;
+        let mut triplets = String::new();
+        for line in input.lines() {
+            triplets = format!("{}{}{}", triplets, line, "\n");
+            println!("triplets!: {}", triplets);
+            i += 1;
+            if i == 3 {
+                sum += evaluate_triplets(&triplets);
+                i = 0;
+                triplets = String::from("");
+            }
+        }
+        assert_eq!(sum, 70);
     }
 
     #[test]
